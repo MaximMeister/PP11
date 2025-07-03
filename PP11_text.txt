@@ -1,0 +1,80 @@
+Task 1:
+
+How do you link prev and next pointers correctly using a static array?
+
+Die beiden pointer für prev und next werden anhand des Arrays gesetzt. Dabei zeigen diese auf das jeweilige vorherigen oder das nächst folgende Indiz im Array (folgende Zeilen veranschaulichen dies in dlist_static.c)
+nodes[i].prev = (i > 0) ? &nodes[i - 1] : NULL;
+-> Speicherort für das vorherige Indiz
+nodes[i].next = (i < 4) ? &nodes[i + 1] : NULL;
+-> Speicherort für das nachfolgende Indiz
+Das Arry hier ist in diesem Fall DNode nodes[5]; 
+Der Speicherplatz für die 5 Indizes im Array werden in der compiletime freigehalten.
+
+
+What are advantages and limitations of compile-time vs. dynamic allocation?
+
+Der Erste Unterschied, der auch in der oberen Beantwortung der Frage angedeutet wurde ist, dass im Falle der compile-time allocation der Speicherplatz während des Kompilierens festgelegt und freigehalten wird - Im Falle der dynamic allocation wird der Speicher innerhalb der Laufzeit über malloc() freigehalten.
+Vorteil der static Variante:
+- schnell (keine Verwaltung über malloc/free)
+- Speicherplatz liegt meistens direkt im Stack 
+
+Nachteile:
+- Von vorneherein festgelegte Größe, es können in diesem Beispiel keine Weiteren Indizes für DNode erstellt werden
+- Erhöhter Speicherverbrauch 
+
+Vorteile der Dynamic allocation:
+- Der Größte Vorteil meiner Meinung nach, Speicherplatz wird nur bei Bedarf freigehalten und man kann beliebig viele Indizes in der Laufzeit erwitern
+ 
+Nachteile:
+- Die Variante der Dynamic allocationbist etwas langsamer da sie im Heap-Speicherbereich abläuft
+- Die Verwaltung darüber ist komplexer, da malloc und free für die Implementierung von nöten sind.
+
+
+How would you extend this static list to include additional data fields?
+
+Es besteht die Möglichkeit das Datenfeld über zusätzliche Informationen für die jeweiligen DNodes beifügen, hier als Bsp.
+typedef struct DNode {
+    int id;
+    char name[50];
+    struct DNode *prev;
+    struct DNode *next;
+} DNode;
+Alternativ könnte man weitere pointer verwenden die auf eine weiteres Array verweisen mit prev2, next2 z.B.
+
+
+
+Task 2:
+
+Why is malloc necessary when adding nodes dynamically ?
+
+Malloc ist zwingend notwendig bei der Verwendung der Dynamic allocation, schließlich weiß man ja nicht wie viele SNodes gebraucht werden. Würden man wie in Task1 von Anfang an ein Limit auf 5 Indizes setzen, so könnte man die static allocation verwenden.
+Mit malloc(sizeof(SNode)) wird im Heap flexibel der Speicherplatz während der Laufzeit (runtime) freigehalten. Ohne malloc würde dies nicht gehen.
+
+How can you traverse the list to print each node’s address and value?
+
+Dazu kann ein for-Schleife verwendet werden:
+for (SNode *p = head; p != NULL; p = p->next) {
+    printf("Adresse: %p, Wert: %i\n", (void*)p, p->value);
+}
+Dabei wird mir dem ersten SNode gestartet, danach wird einfach jedem next-pointer bis zum Ende NULL gefolgt.
+So erhält man eine Übersicht für die Nodes mit ihren Werten und Adressen im Speicher des Heaps. 
+
+What are the consequences of not freeing the list before exit?
+
+Free() sorgt dafür das nicht benötigter Speicher wieder freigegeben wird, gesicht dies nicht, so wäre Konsequenz  das weiterhin der Speicher im Heap freigehalten wird, obwohl dieser zu dem Zeitpunkt gar nicht mehr benötigt wird. Dazu verwendeten man auch den Ausdruck Memory Leak. Geschieht dies zu oft oder bei größeren Programmen, so wird der Speicherplatz knapp. Im worst case kann das Programm oder Sytem abstürzen.
+
+
+
+Task 3:
+
+How does using getopt make the programcmore flexible than argv[1]?
+
+Mithilfe von getopt kann das Programm flags mit den dazu gehörigen Dateien automatisch erkennen uns verarbeiten, wohin gegen argc uns argv diese Option ebenfalls direkt anbieten, wird die Verwendung davon jedoch schnell komplexer und Fehleranfällig. Getopt ist dafür einfacher zu "bedienen" 
+
+What happens if the user omits the -i option?
+
+In diesem Fall wird in die else Variante gesprungen und das Programm führt die Usage-Funktion aufgerufen und daran erinnert das -i gesetzt werden muss. Im Anschluss wird das Programm beendet.
+
+How can you validate that the JSON file loaded is indeed an array?
+
+Dies gewchieht über die  Funktion json_is_array(). Wird der Wert 1 zurückgeben, dann handelt es sich um ein JSON-Array.
